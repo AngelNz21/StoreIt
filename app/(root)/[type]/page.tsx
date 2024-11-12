@@ -5,6 +5,13 @@ import { Models } from "node-appwrite";
 import Card from "@/components/Card";
 import { getFileTypesParams } from "@/lib/utils";
 
+const formatSize = (size: number): string => {
+  if (size < 1024) return `${size} bytes`;
+  if (size < 1024 ** 2) return `${(size / 1024).toFixed(1)} KB`;
+  if (size < 1024 ** 3) return `${(size / 1024 ** 2).toFixed(1)} MB`;
+  return `${(size / 1024 ** 3).toFixed(1)} GB`;
+};
+
 const Page = async ({ searchParams, params }: SearchParamProps) => {
   const type = ((await params)?.type as string) || "";
   const searchText = ((await searchParams)?.query as string) || "";
@@ -14,6 +21,13 @@ const Page = async ({ searchParams, params }: SearchParamProps) => {
 
   const files = await getFiles({ types, searchText, sort });
 
+  const totalsize = files.documents.reduce(
+    (acc: number, file: Models.Document) => acc + (file.size || 0),
+    0
+  );
+
+  const formattedSize = formatSize(totalsize);
+
   return (
     <div className="page-container">
       <section className="w-full">
@@ -21,7 +35,7 @@ const Page = async ({ searchParams, params }: SearchParamProps) => {
 
         <div className="total-size-section">
           <p className="body-1">
-            Total: <span className="h5">0 MB</span>
+            Total: <span className="h5">{formattedSize}</span>
           </p>
 
           <div className="sort-container">
